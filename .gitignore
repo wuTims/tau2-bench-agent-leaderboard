@@ -2,5 +2,5 @@
 docker-compose.yml
 a2a-scenario.toml
 .env
-.env.example
+.venv/
 output/

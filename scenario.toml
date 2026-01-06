@@ -1,16 +1,22 @@
+# tau2-bench Leaderboard Configuration
+# See: https://docs.agentbeats.dev/tutorial/
+
 [green_agent]
-agentbeats_id = ""
-env = { API_KEY = "${GITHUB_SECRET_NAME}", LOG_LEVEL = "INFO" }
+# Green Agent: tau2-bench evaluation orchestrator
+# For local testing, use `image` instead of `agentbeats_id`
+image = "ghcr.io/wutims/tau2-agent:latest"
+# User simulator LLM: full LiteLLM model path required (e.g., nebius/moonshotai/Kimi-K2-Instruct)
+env = { USER_LLM_MODEL = "nebius/moonshotai/Kimi-K2-Instruct", USER_LLM_API_KEY = "${NEBIUS_API_KEY}" }
 
 [[participants]]
-agentbeats_id = ""
-name = "role_1_name"
-env = {}
-
-[[participants]]
-agentbeats_id = ""
-name = "role_2_name"
-env = {}
+# Purple Agent: The agent being evaluated
+# For local testing, use `image` instead of `agentbeats_id`
+# Submitters: Replace with your agent's agentbeats_id
+image = "ghcr.io/wutims/kimi-litellm-agent:latest"
+name = "agent"
+env = { NEBIUS_API_KEY = "${NEBIUS_API_KEY}" }
 
 [config]
-# Add your assessment config here
+# Assessment configuration passed to the green agent
+domain = "airline"
+num_tasks = 5
