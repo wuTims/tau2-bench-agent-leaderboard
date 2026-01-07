@@ -29,6 +29,14 @@ jobs:
       - name: Generate docker-compose.yml
         run: python generate_compose.py --scenario scenario.toml
 
+      - name: Debug - Show generated files
+        run: |
+          echo "=== docker-compose.yml ==="
+          cat docker-compose.yml
+          echo ""
+          echo "=== a2a-scenario.toml ==="
+          cat a2a-scenario.toml
+
       - name: Pull images
         run: |
           if ! docker compose pull; then
