@@ -1,6 +1,7 @@
 name: Run Scenario
 
 on:
+  workflow_dispatch:  # Manual trigger
   push:
     paths:
       - 'scenario.toml'
@@ -8,7 +9,7 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
-    if: github.event.repository.fork == true || github.ref != 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' || github.event.repository.fork == true || github.ref != 'refs/heads/main'
     permissions:
       contents: write
       packages: read
