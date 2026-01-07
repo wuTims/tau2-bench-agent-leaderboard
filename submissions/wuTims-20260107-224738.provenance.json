@@ -1,0 +1,8 @@
+{
+  "image_digests": {
+    "green-agent": "ghcr.io/wutims/tau2-agent@sha256:37bf3587b494abec9dcc6ce543ac5188b9848dd7ff6ee7844f9e8e51527bfcb2",
+    "agent": "ghcr.io/wutims/kimi-litellm-agent@sha256:2b55e3cd1d170aad906a29b70ea8c24e27208617acfa8e77cf2e2c1f32af36b4",
+    "agentbeats-client": "ghcr.io/agentbeats/agentbeats-client@sha256:13dfe3ef4e583a80e7ce2fe3becd0ce3b879841368a7f4fa40b6ebbabeeb014e"
+  },
+  "timestamp": "2026-01-07T22:47:38Z"
+}
