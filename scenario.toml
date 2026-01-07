@@ -3,18 +3,14 @@
 
 [green_agent]
 # Green Agent: tau2-bench evaluation orchestrator
-# For local testing, replace `agentbeats_id` with `image = "ghcr.io/wutims/tau2-agent:latest"`
-agentbeats_id = "019b950f-0087-7d42-ad31-8965c08d1ed7"
-# User simulator LLM: full LiteLLM model path required (e.g., nebius/moonshotai/Kimi-K2-Instruct)
-env = { USER_LLM_MODEL = "nebius/moonshotai/Kimi-K2-Instruct", USER_LLM_API_KEY = "${NEBIUS_API_KEY}" }
+agentbeats_id = "019b950f-0070-7aa0-9135-085aab814ed7"
+env = { USER_LLM_MODEL = "nebius/moonshotai/Kimi-K2-Instruct", USER_LLM_API_KEY = "${NEBIUS_API_KEY}", TAU2_AGENT_MODEL = "litellm/nebius/moonshotai/Kimi-K2-Instruct", CARD_URL = "http://green-agent:9009/a2a/tau2_agent" }
 
 [[participants]]
 # Purple Agent: The agent being evaluated
-# For local testing, replace `agentbeats_id` with `image = "ghcr.io/wutims/kimi-litellm-agent:latest"`
-# Submitters: Replace with your agent's agentbeats_id
 agentbeats_id = "019b9515-47bd-7e80-8ad3-86c33d0175c9"
 name = "agent"
-env = { NEBIUS_API_KEY = "${NEBIUS_API_KEY}" }
+env = { NEBIUS_API_KEY = "${NEBIUS_API_KEY}", CARD_URL = "http://agent:9009/a2a/kimi_litellm_agent" }
 
 [config]
 # Assessment configuration passed to the green agent
