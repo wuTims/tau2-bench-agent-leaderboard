@@ -1,4 +1,8 @@
-"""Generate Docker Compose configuration from scenario.toml"""
+"""Generate Docker Compose configuration from scenario.toml
+
+Supports Google ADK agents that serve at /a2a/<agent_name>/ paths.
+Add 'agent_name' field to scenario.toml for proper A2A endpoint discovery.
+"""
 
 import argparse
 import os
@@ -55,6 +59,7 @@ ENV_PATH = ".env.example"
 DEFAULT_PORT = 9009
 DEFAULT_ENV_VARS = {"PYTHONUNBUFFERED": "1"}
 
+# Template with ADK-style health check path support
 COMPOSE_TEMPLATE = """# Auto-generated from scenario.toml
 
 services:
@@ -62,10 +67,10 @@ services:
     image: {green_image}
     platform: linux/amd64
     container_name: green-agent
-    command: ["--host", "0.0.0.0", "--port", "{green_port}", "--card-url", "http://green-agent:{green_port}"]
+    command: ["--host", "0.0.0.0", "--port", "{green_port}"]
     environment:{green_env}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:{green_port}/.well-known/agent-card.json"]
+      test: ["CMD", "curl", "-f", "http://localhost:{green_port}{green_health_path}"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -92,14 +97,15 @@ networks:
     driver: bridge
 """
 
+# Participant template with ADK-style health check path support
 PARTICIPANT_TEMPLATE = """  {name}:
     image: {image}
     platform: linux/amd64
     container_name: {name}
-    command: ["--host", "0.0.0.0", "--port", "{port}", "--card-url", "http://{name}:{port}"]
+    command: ["--host", "0.0.0.0", "--port", "{port}"]
     environment:{env}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:{port}/.well-known/agent-card.json"]
+      test: ["CMD", "curl", "-f", "http://localhost:{port}{health_path}"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -108,11 +114,34 @@ PARTICIPANT_TEMPLATE = """  {name}:
       - agent-network
 """
 
+# A2A scenario template with ADK-style endpoint paths
 A2A_SCENARIO_TEMPLATE = """[green_agent]
-endpoint = "http://green-agent:{green_port}"
+endpoint = "http://green-agent:{green_port}{green_a2a_path}"
 
 {participants}
 {config}"""
+
+
+def get_health_check_path(agent_name: str | None) -> str:
+    """Get health check path for an agent.
+
+    If agent_name is provided, uses ADK-style path: /a2a/<agent_name>/.well-known/agent-card.json
+    Otherwise falls back to standard A2A path: /.well-known/agent-card.json
+    """
+    if agent_name:
+        return f"/a2a/{agent_name}/.well-known/agent-card.json"
+    return "/.well-known/agent-card.json"
+
+
+def get_a2a_endpoint_path(agent_name: str | None) -> str:
+    """Get A2A endpoint path for an agent.
+
+    If agent_name is provided, uses ADK-style path: /a2a/<agent_name>
+    Otherwise returns empty string for root-based A2A.
+    """
+    if agent_name:
+        return f"/a2a/{agent_name}"
+    return ""
 
 
 def resolve_image(agent: dict, name: str) -> None:
@@ -181,12 +210,17 @@ def generate_docker_compose(scenario: dict[str, Any]) -> str:
 
     participant_names = [p["name"] for p in participants]
 
+    # Get green agent's agent_name for health check path
+    green_agent_name = green.get("agent_name")
+    green_health_path = get_health_check_path(green_agent_name)
+
     participant_services = "\n".join([
         PARTICIPANT_TEMPLATE.format(
             name=p["name"],
             image=p["image"],
             port=DEFAULT_PORT,
-            env=format_env_vars(p.get("env", {}))
+            env=format_env_vars(p.get("env", {})),
+            health_path=get_health_check_path(p.get("agent_name"))
         )
         for p in participants
     ])
@@ -197,6 +231,7 @@ def generate_docker_compose(scenario: dict[str, Any]) -> str:
         green_image=green["image"],
         green_port=DEFAULT_PORT,
         green_env=format_env_vars(green.get("env", {})),
+        green_health_path=green_health_path,
         green_depends=format_depends_on(participant_names),
         participant_services=participant_services,
         client_depends=format_depends_on(all_services)
@@ -207,12 +242,20 @@ def generate_a2a_scenario(scenario: dict[str, Any]) -> str:
     green = scenario["green_agent"]
     participants = scenario.get("participants", [])
 
+    # Get green agent's A2A endpoint path
+    green_agent_name = green.get("agent_name")
+    green_a2a_path = get_a2a_endpoint_path(green_agent_name)
+
     participant_lines = []
     for p in participants:
+        # Get participant's A2A endpoint path
+        participant_agent_name = p.get("agent_name")
+        participant_a2a_path = get_a2a_endpoint_path(participant_agent_name)
+
         lines = [
             f"[[participants]]",
             f"role = \"{p['name']}\"",
-            f"endpoint = \"http://{p['name']}:{DEFAULT_PORT}\"",
+            f"endpoint = \"http://{p['name']}:{DEFAULT_PORT}{participant_a2a_path}\"",
         ]
         if "agentbeats_id" in p:
             lines.append(f"agentbeats_id = \"{p['agentbeats_id']}\"")
@@ -223,6 +266,7 @@ def generate_a2a_scenario(scenario: dict[str, Any]) -> str:
 
     return A2A_SCENARIO_TEMPLATE.format(
         green_port=DEFAULT_PORT,
+        green_a2a_path=green_a2a_path,
         participants="\n".join(participant_lines),
         config="\n".join(config_lines)
     )

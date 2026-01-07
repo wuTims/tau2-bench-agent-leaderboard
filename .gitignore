@@ -1,6 +1,7 @@
 .DS_Store
 docker-compose.yml
 a2a-scenario.toml
+local-scenario.toml
 .env
 .venv/
 output/
