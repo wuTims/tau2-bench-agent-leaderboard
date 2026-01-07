@@ -122,25 +122,77 @@ endpoint = "http://green-agent:{green_port}{green_a2a_path}"
 {config}"""
 
 
-def get_health_check_path(agent_name: str | None) -> str:
+def extract_path_from_card_url(env: dict[str, str]) -> str | None:
+    """Extract A2A path from CARD_URL environment variable.
+
+    Args:
+        env: Environment variables dict from scenario.toml
+
+    Returns:
+        Path component (e.g., "/a2a/tau2_agent") or None if not found.
+    """
+    card_url = env.get("CARD_URL", "")
+    if not card_url or card_url.startswith("${"):
+        return None
+
+    from urllib.parse import urlparse
+    parsed = urlparse(card_url)
+    path = parsed.path.rstrip("/")
+    return path if path else None
+
+
+def get_health_check_path(agent_name: str | None = None, env: dict[str, str] | None = None) -> str:
     """Get health check path for an agent.
 
-    If agent_name is provided, uses ADK-style path: /a2a/<agent_name>/.well-known/agent-card.json
-    Otherwise falls back to standard A2A path: /.well-known/agent-card.json
+    Priority for determining paths:
+    1. agent_name field (explicit): /a2a/<agent_name>/.well-known/agent-card.json
+    2. CARD_URL env var (extracted path): <path>/.well-known/agent-card.json
+    3. Default (standard A2A): /.well-known/agent-card.json
+
+    Args:
+        agent_name: Optional explicit agent name for ADK-style path.
+        env: Optional environment variables dict to extract CARD_URL from.
+
+    Returns:
+        Health check path for the agent card endpoint.
     """
+    # If agent_name is explicit, use it directly
     if agent_name:
         return f"/a2a/{agent_name}/.well-known/agent-card.json"
+
+    # Try to extract path from CARD_URL
+    if env:
+        card_path = extract_path_from_card_url(env)
+        if card_path:
+            return f"{card_path}/.well-known/agent-card.json"
+
+    # Default: standard A2A path
     return "/.well-known/agent-card.json"
 
 
-def get_a2a_endpoint_path(agent_name: str | None) -> str:
+def get_a2a_endpoint_path(agent_name: str | None = None, env: dict[str, str] | None = None) -> str:
     """Get A2A endpoint path for an agent.
 
-    If agent_name is provided, uses ADK-style path: /a2a/<agent_name>
-    Otherwise returns empty string for root-based A2A.
+    Priority:
+    1. agent_name field (explicit): /a2a/<agent_name>
+    2. CARD_URL env var (extracted path)
+    3. Default: empty string (root-based A2A)
+
+    Args:
+        agent_name: Optional explicit agent name for ADK-style path.
+        env: Optional environment variables dict.
+
+    Returns:
+        A2A endpoint path or empty string for root-based A2A.
     """
     if agent_name:
         return f"/a2a/{agent_name}"
+
+    if env:
+        path = extract_path_from_card_url(env)
+        if path:
+            return path
+
     return ""
 
 
@@ -210,9 +262,9 @@ def generate_docker_compose(scenario: dict[str, Any]) -> str:
 
     participant_names = [p["name"] for p in participants]
 
-    # Get green agent's agent_name for health check path
-    green_agent_name = green.get("agent_name")
-    green_health_path = get_health_check_path(green_agent_name)
+    # Get green agent's health check path (from agent_name or CARD_URL)
+    green_env = green.get("env", {})
+    green_health_path = get_health_check_path(green.get("agent_name"), green_env)
 
     participant_services = "\n".join([
         PARTICIPANT_TEMPLATE.format(
@@ -220,7 +272,7 @@ def generate_docker_compose(scenario: dict[str, Any]) -> str:
             image=p["image"],
             port=DEFAULT_PORT,
             env=format_env_vars(p.get("env", {})),
-            health_path=get_health_check_path(p.get("agent_name"))
+            health_path=get_health_check_path(p.get("agent_name"), p.get("env", {}))
         )
         for p in participants
     ])
@@ -242,15 +294,14 @@ def generate_a2a_scenario(scenario: dict[str, Any]) -> str:
     green = scenario["green_agent"]
     participants = scenario.get("participants", [])
 
-    # Get green agent's A2A endpoint path
-    green_agent_name = green.get("agent_name")
-    green_a2a_path = get_a2a_endpoint_path(green_agent_name)
+    # Get green agent's A2A endpoint path (from agent_name or CARD_URL)
+    green_env = green.get("env", {})
+    green_a2a_path = get_a2a_endpoint_path(green.get("agent_name"), green_env)
 
     participant_lines = []
     for p in participants:
-        # Get participant's A2A endpoint path
-        participant_agent_name = p.get("agent_name")
-        participant_a2a_path = get_a2a_endpoint_path(participant_agent_name)
+        # Get participant's A2A endpoint path (from agent_name or CARD_URL)
+        participant_a2a_path = get_a2a_endpoint_path(p.get("agent_name"), p.get("env", {}))
 
         lines = [
             f"[[participants]]",
