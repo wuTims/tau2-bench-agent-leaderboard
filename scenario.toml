@@ -4,7 +4,7 @@
 [green_agent]
 # Green Agent: tau2-bench evaluation orchestrator
 agentbeats_id = "019b950f-0070-7aa0-9135-085aab814ed7"
-env = { USER_LLM_MODEL = "nebius/moonshotai/Kimi-K2-Instruct", USER_LLM_API_KEY = "${NEBIUS_API_KEY}", TAU2_AGENT_MODEL = "litellm/nebius/moonshotai/Kimi-K2-Instruct", CARD_URL = "http://green-agent:9009/a2a/tau2_agent" }
+env = { USER_LLM_MODEL = "nebius/moonshotai/Kimi-K2-Instruct", USER_LLM_API_KEY = "${NEBIUS_API_KEY}", TAU2_AGENT_MODEL = "litellm/nebius/moonshotai/Kimi-K2-Instruct", NEBIUS_API_KEY = "${NEBIUS_API_KEY}", CARD_URL = "http://green-agent:9009/a2a/tau2_agent" }
 
 [[participants]]
 # Purple Agent: The agent being evaluated
