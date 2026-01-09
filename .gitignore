@@ -2,6 +2,8 @@
 docker-compose.yml
 a2a-scenario.toml
 local-scenario.toml
+test-*.toml
 .env
 .venv/
 output/
+DEVELOPMENT.md
