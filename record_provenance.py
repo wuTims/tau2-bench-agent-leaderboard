@@ -15,7 +15,17 @@ except ImportError:
 
 
 def get_image_digest(image: str) -> str:
-    """Get the RepoDigest for a docker image pulled from a registry."""
+    """Get the RepoDigest for a Docker image pulled from a registry.
+
+    Args:
+        image: Docker image name (e.g., 'ghcr.io/user/image:tag').
+
+    Returns:
+        Full digest string (e.g., 'ghcr.io/user/image@sha256:abc123...').
+
+    Raises:
+        SystemExit: If docker inspect fails or image has no registry digest.
+    """
     result = subprocess.run(
         ["docker", "image", "inspect", image, "--format", "{{index .RepoDigests 0}}"],
         capture_output=True,
@@ -34,12 +44,26 @@ def get_image_digest(image: str) -> str:
 
 
 def parse_compose(compose_path: Path) -> dict:
-    """Parse docker-compose.yml."""
+    """Parse docker-compose.yml file.
+
+    Args:
+        compose_path: Path to docker-compose.yml.
+
+    Returns:
+        Parsed YAML as dict.
+    """
     return yaml.safe_load(compose_path.read_text())
 
 
 def collect_image_digests(compose: dict) -> dict[str, str]:
-    """Collect digests for all images in the compose file."""
+    """Collect digests for all images in the compose file.
+
+    Args:
+        compose: Parsed docker-compose.yml dict.
+
+    Returns:
+        Dict mapping service name to image digest.
+    """
     digests = {}
 
     for name, service in compose["services"].items():
@@ -51,7 +75,12 @@ def collect_image_digests(compose: dict) -> dict[str, str]:
 
 
 def write_provenance(output_path: Path, image_digests: dict[str, str]) -> None:
-    """Write provenance information to a JSON file."""
+    """Write provenance information to a JSON file.
+
+    Args:
+        output_path: Path to write provenance.json.
+        image_digests: Dict mapping service name to image digest.
+    """
     provenance = {
         "image_digests": image_digests,
         "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")

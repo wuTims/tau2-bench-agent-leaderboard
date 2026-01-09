@@ -12,18 +12,20 @@ from pathlib import Path
 from typing import Any
 
 try:
-    import tomli
+    import tomllib as tomli
 except ImportError:
     try:
-        import tomllib as tomli
+        import tomli
     except ImportError:
         print("Error: tomli required. Install with: pip install tomli")
         sys.exit(1)
+
 try:
     import tomli_w
 except ImportError:
-    print("Error: tomli-w required. Install with: pip install tomli-w")
+    print("Error: tomli_w required. Install with: pip install tomli-w")
     sys.exit(1)
+
 try:
     import requests
 except ImportError:
@@ -65,9 +67,10 @@ COMPOSE_TEMPLATE = """# Auto-generated from scenario.toml
 services:
   green-agent:
     image: {green_image}
-    platform: linux/amd64
-    container_name: green-agent
+{green_pull_policy}    container_name: green-agent
     command: ["--host", "0.0.0.0", "--port", "{green_port}"]
+    env_file:
+      - .env
     environment:{green_env}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:{green_port}{green_health_path}"]
@@ -84,13 +87,22 @@ services:
     image: ghcr.io/agentbeats/agentbeats-client:v1.0.0
     platform: linux/amd64
     container_name: agentbeats-client
+    configs:
+      - source: scenario
+        target: /app/scenario.toml
     volumes:
-      - ./a2a-scenario.toml:/app/scenario.toml
-      - ./output:/app/output
+      - results:/app/output
     command: ["scenario.toml", "output/results.json"]
     depends_on:{client_depends}
     networks:
       - agent-network
+
+configs:
+  scenario:
+    file: ./a2a-scenario.toml
+
+volumes:
+  results:
 
 networks:
   agent-network:
@@ -100,8 +112,7 @@ networks:
 # Participant template with ADK-style health check path support
 PARTICIPANT_TEMPLATE = """  {name}:
     image: {image}
-    platform: linux/amd64
-    container_name: {name}
+{pull_policy}    container_name: {name}
     command: ["--host", "0.0.0.0", "--port", "{port}"]
     environment:{env}
     healthcheck:
@@ -122,78 +133,60 @@ endpoint = "http://green-agent:{green_port}{green_a2a_path}"
 {config}"""
 
 
-def extract_path_from_card_url(env: dict[str, str]) -> str | None:
-    """Extract A2A path from CARD_URL environment variable.
+def get_agent_base_path(agent_name: str | None = None, env: dict[str, str] | None = None) -> str:
+    """Get base A2A path for an agent.
 
-    Args:
-        env: Environment variables dict from scenario.toml
-
-    Returns:
-        Path component (e.g., "/a2a/tau2_agent") or None if not found.
-    """
-    card_url = env.get("CARD_URL", "")
-    if not card_url or card_url.startswith("${"):
-        return None
-
-    from urllib.parse import urlparse
-    parsed = urlparse(card_url)
-    path = parsed.path.rstrip("/")
-    return path if path else None
-
-
-def get_health_check_path(agent_name: str | None = None, env: dict[str, str] | None = None) -> str:
-    """Get health check path for an agent.
-
-    Priority for determining paths:
-    1. agent_name field (explicit): /a2a/<agent_name>/.well-known/agent-card.json
-    2. CARD_URL env var (extracted path): <path>/.well-known/agent-card.json
-    3. Default (standard A2A): /.well-known/agent-card.json
+    Priority:
+    1. agent_name field (explicit): /a2a/<agent_name>
+    2. CARD_URL env var (extracted path from URL)
+    3. Default: empty string (root-based A2A)
 
     Args:
         agent_name: Optional explicit agent name for ADK-style path.
         env: Optional environment variables dict to extract CARD_URL from.
 
     Returns:
-        Health check path for the agent card endpoint.
-    """
-    # If agent_name is explicit, use it directly
-    if agent_name:
-        return f"/a2a/{agent_name}/.well-known/agent-card.json"
-
-    # Try to extract path from CARD_URL
-    if env:
-        card_path = extract_path_from_card_url(env)
-        if card_path:
-            return f"{card_path}/.well-known/agent-card.json"
-
-    # Default: standard A2A path
-    return "/.well-known/agent-card.json"
-
-
-def get_a2a_endpoint_path(agent_name: str | None = None, env: dict[str, str] | None = None) -> str:
-    """Get A2A endpoint path for an agent.
-
-    Priority:
-    1. agent_name field (explicit): /a2a/<agent_name>
-    2. CARD_URL env var (extracted path)
-    3. Default: empty string (root-based A2A)
-
-    Args:
-        agent_name: Optional explicit agent name for ADK-style path.
-        env: Optional environment variables dict.
-
-    Returns:
-        A2A endpoint path or empty string for root-based A2A.
+        Base path for agent (e.g., "/a2a/tau2_agent" or "").
     """
     if agent_name:
         return f"/a2a/{agent_name}"
 
     if env:
-        path = extract_path_from_card_url(env)
-        if path:
-            return path
+        card_url = env.get("CARD_URL", "")
+        if card_url and not card_url.startswith("${"):
+            from urllib.parse import urlparse
+            path = urlparse(card_url).path.rstrip("/")
+            if path:
+                return path
 
     return ""
+
+
+def get_health_check_path(agent_name: str | None = None, env: dict[str, str] | None = None) -> str:
+    """Get health check path for an agent's agent-card endpoint.
+
+    Returns base path + /.well-known/agent-card.json
+    """
+    base_path = get_agent_base_path(agent_name, env)
+    return f"{base_path}/.well-known/agent-card.json"
+
+
+def get_pull_policy(image: str) -> str:
+    """Get the appropriate pull policy/platform for an image.
+
+    Local images (ending with :local) use pull_policy: never to prevent
+    Docker from trying to pull from a registry. Remote images use
+    platform: linux/amd64 for cross-platform compatibility.
+
+    Args:
+        image: Docker image name (e.g., "myimage:local" or "ghcr.io/org/image:v1").
+
+    Returns:
+        YAML-formatted line with 4-space indentation and trailing newline.
+    """
+    if image.endswith(":local"):
+        return "    pull_policy: never\n"
+    return "    platform: linux/amd64\n"
 
 
 def resolve_image(agent: dict, name: str) -> None:
@@ -204,21 +197,37 @@ def resolve_image(agent: dict, name: str) -> None:
     if has_image and has_id:
         print(f"Error: {name} has both 'image' and 'agentbeats_id' - use one or the other")
         sys.exit(1)
-    elif has_image:
+
+    if not has_image and not has_id:
+        print(f"Error: {name} must have either 'image' or 'agentbeats_id' field")
+        sys.exit(1)
+
+    if has_image:
         if os.environ.get("GITHUB_ACTIONS"):
             print(f"Error: {name} requires 'agentbeats_id' for GitHub Actions (use 'image' for local testing only)")
             sys.exit(1)
         print(f"Using {name} image: {agent['image']}")
-    elif has_id:
+    else:
         info = fetch_agent_info(agent["agentbeats_id"])
         agent["image"] = info["docker_image"]
         print(f"Resolved {name} image: {agent['image']}")
-    else:
-        print(f"Error: {name} must have either 'image' or 'agentbeats_id' field")
-        sys.exit(1)
 
 
 def parse_scenario(scenario_path: Path) -> dict[str, Any]:
+    """Parse and validate scenario.toml file.
+
+    Resolves agent images from either direct 'image' field or agentbeats API,
+    and validates that all participants have unique names.
+
+    Args:
+        scenario_path: Path to scenario.toml file.
+
+    Returns:
+        Parsed scenario dict with resolved image fields.
+
+    Raises:
+        SystemExit: If validation fails or image resolution fails.
+    """
     toml_data = scenario_path.read_text()
     data = tomli.loads(toml_data)
 
@@ -249,21 +258,19 @@ def format_env_vars(env_dict: dict[str, Any]) -> str:
 
 
 def format_depends_on(services: list) -> str:
-    lines = []
-    for service in services:
-        lines.append(f"      {service}:")
-        lines.append(f"        condition: service_healthy")
+    if not services:
+        return ""
+    lines = [f"      {service}:\n        condition: service_healthy" for service in services]
     return "\n" + "\n".join(lines)
 
 
 def generate_docker_compose(scenario: dict[str, Any]) -> str:
     green = scenario["green_agent"]
     participants = scenario.get("participants", [])
-
     participant_names = [p["name"] for p in participants]
 
-    # Get green agent's health check path (from agent_name or CARD_URL)
-    green_env = green.get("env", {})
+    # Add CARD_URL for A2A protocol: agent card URL field must use container hostname
+    green_env = {**green.get("env", {}), "CARD_URL": f"http://green-agent:{DEFAULT_PORT}"}
     green_health_path = get_health_check_path(green.get("agent_name"), green_env)
 
     participant_services = "\n".join([
@@ -271,22 +278,22 @@ def generate_docker_compose(scenario: dict[str, Any]) -> str:
             name=p["name"],
             image=p["image"],
             port=DEFAULT_PORT,
-            env=format_env_vars(p.get("env", {})),
-            health_path=get_health_check_path(p.get("agent_name"), p.get("env", {}))
+            env=format_env_vars({**p.get("env", {}), "CARD_URL": f"http://{p['name']}:{DEFAULT_PORT}"}),
+            health_path=get_health_check_path(p.get("agent_name"), p.get("env", {})),
+            pull_policy=get_pull_policy(p["image"])
         )
         for p in participants
     ])
 
-    all_services = ["green-agent"] + participant_names
-
     return COMPOSE_TEMPLATE.format(
         green_image=green["image"],
         green_port=DEFAULT_PORT,
-        green_env=format_env_vars(green.get("env", {})),
+        green_env=format_env_vars(green_env),
         green_health_path=green_health_path,
         green_depends=format_depends_on(participant_names),
         participant_services=participant_services,
-        client_depends=format_depends_on(all_services)
+        client_depends=format_depends_on(["green-agent"] + participant_names),
+        green_pull_policy=get_pull_policy(green["image"])
     )
 
 
@@ -294,17 +301,13 @@ def generate_a2a_scenario(scenario: dict[str, Any]) -> str:
     green = scenario["green_agent"]
     participants = scenario.get("participants", [])
 
-    # Get green agent's A2A endpoint path (from agent_name or CARD_URL)
-    green_env = green.get("env", {})
-    green_a2a_path = get_a2a_endpoint_path(green.get("agent_name"), green_env)
+    green_a2a_path = get_agent_base_path(green.get("agent_name"), green.get("env", {}))
 
     participant_lines = []
     for p in participants:
-        # Get participant's A2A endpoint path (from agent_name or CARD_URL)
-        participant_a2a_path = get_a2a_endpoint_path(p.get("agent_name"), p.get("env", {}))
-
+        participant_a2a_path = get_agent_base_path(p.get("agent_name"), p.get("env", {}))
         lines = [
-            f"[[participants]]",
+            "[[participants]]",
             f"role = \"{p['name']}\"",
             f"endpoint = \"http://{p['name']}:{DEFAULT_PORT}{participant_a2a_path}\"",
         ]
@@ -312,43 +315,29 @@ def generate_a2a_scenario(scenario: dict[str, Any]) -> str:
             lines.append(f"agentbeats_id = \"{p['agentbeats_id']}\"")
         participant_lines.append("\n".join(lines) + "\n")
 
-    config_section = scenario.get("config", {})
-    config_lines = [tomli_w.dumps({"config": config_section})]
+    config_toml = tomli_w.dumps({"config": scenario.get("config", {})})
 
     return A2A_SCENARIO_TEMPLATE.format(
         green_port=DEFAULT_PORT,
         green_a2a_path=green_a2a_path,
         participants="\n".join(participant_lines),
-        config="\n".join(config_lines)
+        config=config_toml
     )
 
 
 def generate_env_file(scenario: dict[str, Any]) -> str:
-    green = scenario["green_agent"]
-    participants = scenario.get("participants", [])
-
+    env_var_pattern = re.compile(r'\$\{([^}]+)\}')
     secrets = set()
 
-    # Extract secrets from ${VAR} patterns in env values
-    env_var_pattern = re.compile(r'\$\{([^}]+)\}')
-
-    for value in green.get("env", {}).values():
-        for match in env_var_pattern.findall(str(value)):
-            secrets.add(match)
-
-    for p in participants:
-        for value in p.get("env", {}).values():
-            for match in env_var_pattern.findall(str(value)):
-                secrets.add(match)
+    all_agents = [scenario["green_agent"]] + scenario.get("participants", [])
+    for agent in all_agents:
+        for value in agent.get("env", {}).values():
+            secrets.update(env_var_pattern.findall(str(value)))
 
     if not secrets:
         return ""
 
-    lines = []
-    for secret in sorted(secrets):
-        lines.append(f"{secret}=")
-
-    return "\n".join(lines) + "\n"
+    return "\n".join(f"{secret}=" for secret in sorted(secrets)) + "\n"
 
 
 def main():

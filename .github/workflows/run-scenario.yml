@@ -77,22 +77,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Debug - Test agent container
+      - name: Debug - Test green agent container
         run: |
-          echo "Starting agent container for debug..."
-          docker compose up -d agent
+          echo "Starting green-agent container for debug..."
+          docker compose up -d green-agent
           sleep 10
           echo "=== Container logs ==="
-          docker compose logs agent
+          docker compose logs green-agent
           echo ""
-          echo "=== Testing health check endpoint ==="
-          docker compose exec agent curl -v http://localhost:9009/a2a/kimi_litellm_agent/.well-known/agent-card.json || true
-          echo ""
-          echo "=== Checking env vars ==="
-          docker compose exec agent env | grep -E "(CARD_URL|AGENTS_DIR)" || true
-          echo ""
-          echo "=== Listing agent files ==="
-          docker compose exec agent ls -la /app/agents/kimi_litellm_agent/ || true
+          echo "=== Container health status ==="
+          docker compose ps green-agent
           docker compose down
 
       - name: Run assessment
