@@ -1,0 +1,11 @@
+{
+  "participants": {
+    "agent": "019b9515-47bd-7e80-8ad3-86c33d0175c9"
+  },
+  "results": [
+    {
+      "error": "INVALID_PARAMETERS",
+      "message": "AssistantMessage must have either content or tool calls. Got UserMessage\ntimestamp: 2026-01-10T05:50:37.823859\ncontent: \ncost: 0.0005773"
+    }
+  ]
+}
