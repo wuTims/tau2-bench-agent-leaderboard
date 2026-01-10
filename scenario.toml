@@ -15,6 +15,7 @@ agentbeats_id = "019b9515-47bd-7e80-8ad3-86c33d0175c9"
 name = "kimi-agent"
 env = { NEBIUS_API_KEY = "${NEBIUS_API_KEY}" }
 
+[[participants]]
 agentbeats_id = "019ba93c-1a47-72d0-a5d7-7584ce067b61"
 name = "vacation-agent"
 env = { NEBIUS_API_KEY = "${NEBIUS_API_KEY}" }
