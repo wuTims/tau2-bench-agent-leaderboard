@@ -5,7 +5,6 @@
 # Green Agent: tau2-bench evaluation orchestrator
 # Orchestrator model/key managed internally by tau2-bench-agent
 agentbeats_id = "019b950f-0070-7aa0-9135-085aab814ed7"
-agent_name = "tau2_agent"
 # USER_LLM_MODEL: Model for user simulator (submitter's cost)
 # NEBIUS_API_KEY: Provider key auto-resolved from model prefix
 env = { USER_LLM_MODEL = "nebius/Qwen/Qwen3-235B-A22B-Thinking-2507", NEBIUS_API_KEY = "${NEBIUS_API_KEY}", TAU2_LLM_MODELS = '{"nebius/Qwen/Qwen3-235B-A22B-Thinking-2507": {"input_cost_per_token": 0.0000001, "output_cost_per_token": 0.0000003}}' }
@@ -13,8 +12,11 @@ env = { USER_LLM_MODEL = "nebius/Qwen/Qwen3-235B-A22B-Thinking-2507", NEBIUS_API
 [[participants]]
 # Purple Agent: Agent under evaluation
 agentbeats_id = "019b9515-47bd-7e80-8ad3-86c33d0175c9"
-name = "agent"
-agent_name = "kimi_litellm_agent"
+name = "kimi-agent"
+env = { NEBIUS_API_KEY = "${NEBIUS_API_KEY}" }
+
+agentbeats_id = "019ba93c-1a47-72d0-a5d7-7584ce067b61"
+name = "vacation-agent"
 env = { NEBIUS_API_KEY = "${NEBIUS_API_KEY}" }
 
 [config]
