@@ -91,7 +91,7 @@ services:
       - source: scenario
         target: /app/scenario.toml
     volumes:
-      - results:/app/output
+      - ./output:/app/output
     command: ["scenario.toml", "output/results.json"]
     depends_on:{client_depends}
     networks:
@@ -100,9 +100,6 @@ services:
 configs:
   scenario:
     file: ./a2a-scenario.toml
-
-volumes:
-  results:
 
 networks:
   agent-network:
@@ -190,7 +187,18 @@ def get_pull_policy(image: str) -> str:
 
 
 def resolve_image(agent: dict, name: str) -> None:
-    """Resolve docker image for an agent, either from 'image' field or agentbeats API."""
+    """Resolve docker image for an agent, either from 'image' field or agentbeats API.
+
+    Updates the agent dict in-place by fetching image from agentbeats API if needed.
+    Validates that exactly one of 'image' or 'agentbeats_id' is provided.
+
+    Args:
+        agent: Agent configuration dict (modified in-place).
+        name: Agent name for error messages (e.g., "green_agent", "participant 'foo'").
+
+    Raises:
+        SystemExit: If both fields, neither field, or image resolution fails.
+    """
     has_image = "image" in agent
     has_id = "agentbeats_id" in agent
 
@@ -207,10 +215,11 @@ def resolve_image(agent: dict, name: str) -> None:
             print(f"Error: {name} requires 'agentbeats_id' for GitHub Actions (use 'image' for local testing only)")
             sys.exit(1)
         print(f"Using {name} image: {agent['image']}")
-    else:
-        info = fetch_agent_info(agent["agentbeats_id"])
-        agent["image"] = info["docker_image"]
-        print(f"Resolved {name} image: {agent['image']}")
+        return
+
+    info = fetch_agent_info(agent["agentbeats_id"])
+    agent["image"] = info["docker_image"]
+    print(f"Resolved {name} image: {agent['image']}")
 
 
 def parse_scenario(scenario_path: Path) -> dict[str, Any]:
@@ -228,8 +237,7 @@ def parse_scenario(scenario_path: Path) -> dict[str, Any]:
     Raises:
         SystemExit: If validation fails or image resolution fails.
     """
-    toml_data = scenario_path.read_text()
-    data = tomli.loads(toml_data)
+    data = tomli.loads(scenario_path.read_text())
 
     green = data.get("green_agent", {})
     resolve_image(green, "green_agent")
@@ -252,12 +260,31 @@ def parse_scenario(scenario_path: Path) -> dict[str, Any]:
 
 
 def format_env_vars(env_dict: dict[str, Any]) -> str:
+    """Format environment variables for docker-compose YAML.
+
+    Uses dictionary format which handles complex values better than list format.
+    Values are properly quoted to prevent YAML parsing issues.
+    """
     env_vars = {**DEFAULT_ENV_VARS, **env_dict}
-    lines = [f"      - {key}={value}" for key, value in env_vars.items()]
+    lines = []
+    for key, value in env_vars.items():
+        str_value = str(value)
+        # Always quote values in dictionary format for safety
+        # Escape backslashes and double quotes
+        str_value = str_value.replace('\\', '\\\\').replace('"', '\\"')
+        lines.append(f'      {key}: "{str_value}"')
     return "\n" + "\n".join(lines)
 
 
 def format_depends_on(services: list) -> str:
+    """Format service dependencies for docker-compose healthcheck conditions.
+
+    Args:
+        services: List of service names.
+
+    Returns:
+        YAML-formatted depends_on block with service_healthy conditions, or empty string.
+    """
     if not services:
         return ""
     lines = [f"      {service}:\n        condition: service_healthy" for service in services]
@@ -265,6 +292,17 @@ def format_depends_on(services: list) -> str:
 
 
 def generate_docker_compose(scenario: dict[str, Any]) -> str:
+    """Generate docker-compose.yml configuration from scenario.
+
+    Creates service definitions for green agent, participants, and agentbeats client.
+    Automatically sets CARD_URL environment variable for A2A protocol endpoint discovery.
+
+    Args:
+        scenario: Parsed scenario dict with green_agent and participants.
+
+    Returns:
+        YAML-formatted docker-compose configuration as string.
+    """
     green = scenario["green_agent"]
     participants = scenario.get("participants", [])
     participant_names = [p["name"] for p in participants]
@@ -298,6 +336,17 @@ def generate_docker_compose(scenario: dict[str, Any]) -> str:
 
 
 def generate_a2a_scenario(scenario: dict[str, Any]) -> str:
+    """Generate a2a-scenario.toml from scenario configuration.
+
+    Builds agent endpoints using container hostnames and A2A base paths.
+    Includes config section (domain, num_tasks, etc.) from original scenario.
+
+    Args:
+        scenario: Parsed scenario dict with green_agent, participants, and config.
+
+    Returns:
+        TOML-formatted A2A scenario configuration as string.
+    """
     green = scenario["green_agent"]
     participants = scenario.get("participants", [])
 
@@ -326,6 +375,17 @@ def generate_a2a_scenario(scenario: dict[str, Any]) -> str:
 
 
 def generate_env_file(scenario: dict[str, Any]) -> str:
+    """Generate .env.example file with placeholder secrets from scenario.
+
+    Extracts all ${VAR_NAME} placeholders from environment variables in scenario.
+    Used to document required secrets for the docker-compose environment.
+
+    Args:
+        scenario: Parsed scenario dict with green_agent and participants.
+
+    Returns:
+        Newline-separated list of "VAR_NAME=" entries, or empty string if no placeholders.
+    """
     env_var_pattern = re.compile(r'\$\{([^}]+)\}')
     secrets = set()
 
