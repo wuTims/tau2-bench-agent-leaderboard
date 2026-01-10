@@ -8,7 +8,7 @@ agentbeats_id = "019b950f-0070-7aa0-9135-085aab814ed7"
 agent_name = "tau2_agent"
 # USER_LLM_MODEL: Model for user simulator (submitter's cost)
 # NEBIUS_API_KEY: Provider key auto-resolved from model prefix
-env = { USER_LLM_MODEL = "nebius/moonshotai/Kimi-K2-Instruct", NEBIUS_API_KEY = "${NEBIUS_API_KEY}", TAU2_LLM_MODELS = '{"nebius/moonshotai/Kimi-K2-Instruct": {"input_cost_per_token": 0.0000006, "output_cost_per_token": 0.0000025}, "nebius/moonshotai/Kimi-K2-Thinking": {"input_cost_per_token": 0.0000006, "output_cost_per_token": 0.0000025}}' }
+env = { USER_LLM_MODEL = "nebius/Qwen/Qwen3-235B-A22B-Thinking-2507", NEBIUS_API_KEY = "${NEBIUS_API_KEY}", TAU2_LLM_MODELS = '{"nebius/Qwen/Qwen3-235B-A22B-Thinking-2507": {"input_cost_per_token": 0.0000001, "output_cost_per_token": 0.0000003}}' }
 
 [[participants]]
 # Purple Agent: Agent under evaluation
