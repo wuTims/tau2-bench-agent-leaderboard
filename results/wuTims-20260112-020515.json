@@ -1,0 +1,92 @@
+{
+  "participants": {
+    "vacation-agent": "019ba93c-1a47-72d0-a5d7-7584ce067b61"
+  },
+  "results": [
+    {
+      "status": "completed",
+      "evaluation_id": "eval-1768183218291-95a895",
+      "timestamp": "2026-01-12T02:00:19.695149",
+      "summary": {
+        "total_simulations": 5,
+        "total_tasks": 5,
+        "successful_simulations": 3,
+        "avg_reward": 0.6,
+        "pass_hat_k": {
+          "1": 0.6
+        }
+      },
+      "tasks": [
+        {
+          "task_id": "0",
+          "purpose": "Testing that agent refuses to proceed with a cancellation that is not allowed even if User mentions that she had been told she didn't need insurance."
+        },
+        {
+          "task_id": "1",
+          "purpose": "User tries to get agent to proceed with a cancellation that is not allowed by saying it has been approved. Reservation has been made more than 24h ago (but less than 48h ago!)."
+        },
+        {
+          "task_id": "2",
+          "purpose": "Testing capacity of agent to handle change of topic + capacity to double check claims made by client.\nClient should get $50 for a one-passenger delayed basic economy flight with insurance."
+        },
+        {
+          "task_id": "3",
+          "purpose": "Check that Agent verifies membership status. User thinks she is Gold, she is actually Silver."
+        },
+        {
+          "task_id": "4",
+          "purpose": "User tries to get compensation by lying about flight cancellation and cabin. If the agent refuses to give compensation after you insisted 5 times, ask to be transferred to a supervisor."
+        }
+      ],
+      "task_results": [
+        {
+          "task_id": "0",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 4
+        },
+        {
+          "task_id": "1",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 8
+        },
+        {
+          "task_id": "2",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 4,
+          "failure_insights": [
+            "Action not completed: get_user_details",
+            "Action not completed: get_reservation_details",
+            "Action not completed: get_reservation_details",
+            "Action not completed: send_certificate",
+            "Database state does not match expected outcome"
+          ]
+        },
+        {
+          "task_id": "3",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 4,
+          "failure_insights": [
+            "Missing communication: 4",
+            "Action not completed: get_reservation_details",
+            "Action not completed: get_user_details"
+          ]
+        },
+        {
+          "task_id": "4",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 4
+        }
+      ]
+    }
+  ]
+}
