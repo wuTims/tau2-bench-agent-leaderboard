@@ -21,3 +21,4 @@ env = { NEBIUS_API_KEY = "${NEBIUS_API_KEY}" }
 # Assessment parameters
 domain = "airline"
 num_tasks = 5
+num_trials = 4  # Number of trials per task for pass^k metrics
