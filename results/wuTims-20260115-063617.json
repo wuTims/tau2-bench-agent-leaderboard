@@ -1,0 +1,168 @@
+{
+  "participants": {
+    "vacation-agent": "019ba93c-1a47-72d0-a5d7-7584ce067b61"
+  },
+  "results": [
+    {
+      "status": "completed",
+      "evaluation_id": "eval-1768458325500-535a40",
+      "timestamp": "2026-01-15T06:25:26.629107",
+      "summary": {
+        "domain": "vacation_rental",
+        "num_trials": 3,
+        "total_simulations": 15,
+        "total_tasks": 5,
+        "successful_simulations": 11,
+        "avg_reward": 0.7333333333333333,
+        "pass_hat_k": {
+          "1": 0.7333333333333333,
+          "2": 0.6666666666666666,
+          "3": 0.6
+        },
+        "avg_difficulty": 0.6
+      },
+      "tasks": [
+        {
+          "task_id": "1",
+          "purpose": "Lookup Chain: Test firm policy no refund (3 days out). Same timing as task 0 but different policy = different outcome."
+        },
+        {
+          "task_id": "6",
+          "purpose": "Refund Outcome: Test 0% refund path (strict policy, <7 days)"
+        },
+        {
+          "task_id": "10",
+          "purpose": "Information Retrieval: Test agent disambiguates when user has multiple reservations"
+        },
+        {
+          "task_id": "13",
+          "purpose": "Validate get_host_profile tool retrieves host preferences"
+        },
+        {
+          "task_id": "14",
+          "purpose": "Validate get_guest_history tool retrieves repeat guest information"
+        }
+      ],
+      "task_results": [
+        {
+          "task_id": "1",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 32
+        },
+        {
+          "task_id": "6",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 22
+        },
+        {
+          "task_id": "10",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 26,
+          "failure_insights": [
+            "Action not completed: cancel_reservation"
+          ]
+        },
+        {
+          "task_id": "13",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 14
+        },
+        {
+          "task_id": "14",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 20
+        },
+        {
+          "task_id": "1",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 18
+        },
+        {
+          "task_id": "6",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 12
+        },
+        {
+          "task_id": "10",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 32,
+          "failure_insights": [
+            "Action not completed: cancel_reservation"
+          ]
+        },
+        {
+          "task_id": "13",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 12
+        },
+        {
+          "task_id": "14",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 20
+        },
+        {
+          "task_id": "1",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 38
+        },
+        {
+          "task_id": "6",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 26
+        },
+        {
+          "task_id": "10",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 18,
+          "failure_insights": [
+            "Action not completed: get_listing_details",
+            "Action not completed: cancel_reservation"
+          ]
+        },
+        {
+          "task_id": "13",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 10
+        },
+        {
+          "task_id": "14",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 20,
+          "failure_insights": [
+            "Action not completed: get_guest_history"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+# tau2-bench Leaderboard Configuration
+# Documentation: https://docs.agentbeats.dev/tutorial/
+
+[green_agent]
+# Green Agent: tau2-bench evaluation orchestrator
+# Orchestrator model/key managed internally by tau2-bench-agent
+agentbeats_id = "019b950f-0070-7aa0-9135-085aab814ed7"
+# USER_LLM_MODEL: Model for user simulator (submitter's cost)
+# NEBIUS_API_KEY: Provider key auto-resolved from model prefix
+env = { USER_LLM_MODEL = "nebius/Qwen/Qwen3-235B-A22B-Thinking-2507", NEBIUS_API_KEY = "${NEBIUS_API_KEY}", TAU2_LLM_MODELS = '{"nebius/Qwen/Qwen3-235B-A22B-Thinking-2507": {"input_cost_per_token": 0.0000001, "output_cost_per_token": 0.0000003}}' }
+
+[[participants]]
+# Purple Agent: tau2-bench-agent green_agent configuration is only setup to evaluate 1 purple agent at a time
+agentbeats_id = "019ba93c-1a47-72d0-a5d7-7584ce067b61"
+name = "vacation-agent"
+env = { NEBIUS_API_KEY = "${NEBIUS_API_KEY}" }
+
+[config]
+# Assessment parameters
+domain = "vacation_rental"
+task_split = "eval"
+num_tasks = 5
+num_trials = 3
