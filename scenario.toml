@@ -18,5 +18,6 @@ env = { NEBIUS_API_KEY = "${NEBIUS_API_KEY}" }
 [config]
 # Assessment parameters
 domain = "vacation_rental"
+task_split = "eval"
 num_tasks = 5
 num_trials = 3
