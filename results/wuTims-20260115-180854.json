@@ -1,0 +1,383 @@
+{
+  "participants": {
+    "vacation-agent": "019ba93c-1a47-72d0-a5d7-7584ce067b61"
+  },
+  "results": [
+    {
+      "status": "completed",
+      "evaluation_id": "eval-1768498965288-0c8f7e",
+      "timestamp": "2026-01-15T17:42:46.339826",
+      "summary": {
+        "domain": "vacation_rental",
+        "num_trials": 2,
+        "total_simulations": 32,
+        "total_tasks": 16,
+        "successful_simulations": 18,
+        "avg_reward": 0.5625,
+        "pass_hat_k": {
+          "1": 0.5625,
+          "2": 0.5
+        },
+        "avg_difficulty": 0.5625
+      },
+      "tasks": [
+        {
+          "task_id": "1",
+          "purpose": "Lookup Chain: Test firm policy no refund (3 days out). Same timing as task 0 but different policy = different outcome."
+        },
+        {
+          "task_id": "6",
+          "purpose": "Refund Outcome: Test 0% refund path (strict policy, <7 days)"
+        },
+        {
+          "task_id": "10",
+          "purpose": "Information Retrieval: Test agent disambiguates when user has multiple reservations"
+        },
+        {
+          "task_id": "13",
+          "purpose": "Validate get_host_profile tool retrieves host preferences"
+        },
+        {
+          "task_id": "14",
+          "purpose": "Validate get_guest_history tool retrieves repeat guest information"
+        },
+        {
+          "task_id": "22",
+          "purpose": "Full nuance scenario: Repeat guest with medical emergency requests exception from flexible host"
+        },
+        {
+          "task_id": "23",
+          "purpose": "Full nuance scenario: New guest reports issue at strict host's property, evidence validated but host denies compensation"
+        },
+        {
+          "task_id": "24",
+          "purpose": "Full nuance scenario: Military service member requests cancellation exception from relationships-focused host"
+        },
+        {
+          "task_id": "25",
+          "purpose": "Full nuance scenario: Repeat guest requests exception from strict host - tests that loyalty doesn't override hard limits"
+        },
+        {
+          "task_id": "26",
+          "purpose": "Full nuance scenario: Guest admits honest mistake caused issue - tests Pierre's forgiveness philosophy"
+        },
+        {
+          "task_id": "28",
+          "purpose": "Full nuance scenario: Reviews-focused host + service failure - agent should proactively process goodwill refund based on host philosophy"
+        },
+        {
+          "task_id": "29",
+          "purpose": "Full nuance scenario: Conflicting evidence with reviews-focused host - host sides with guest despite inconclusive proof"
+        },
+        {
+          "task_id": "31",
+          "purpose": "Full nuance scenario: Safety concern requires human transfer regardless of host profile"
+        },
+        {
+          "task_id": "32",
+          "purpose": "Host Profile Test: Early check-in request from repeat guest to host who values relationships. Tests agent's ability to consult host profile and recognize repeat guest status."
+        },
+        {
+          "task_id": "33",
+          "purpose": "Host Profile Test: Early check-in request to strict host who denies all exceptions. Tests agent's ability to apply different host preferences to same request type."
+        },
+        {
+          "task_id": "34",
+          "purpose": "Evidence Evaluation: Inconclusive evidence with reviews-focused host. Tests agent's ability to navigate ambiguity using host preferences."
+        }
+      ],
+      "task_results": [
+        {
+          "task_id": "1",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 20
+        },
+        {
+          "task_id": "6",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 16
+        },
+        {
+          "task_id": "10",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 38,
+          "failure_insights": [
+            "Action not completed: get_listing_details",
+            "Action not completed: cancel_reservation",
+            "Database state does not match expected outcome"
+          ]
+        },
+        {
+          "task_id": "13",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 14
+        },
+        {
+          "task_id": "14",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 16,
+          "failure_insights": [
+            "Action not completed: get_guest_history"
+          ]
+        },
+        {
+          "task_id": "22",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 36
+        },
+        {
+          "task_id": "23",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 20,
+          "failure_insights": [
+            "Action not completed: request_host_decision",
+            "Database state does not match expected outcome"
+          ]
+        },
+        {
+          "task_id": "24",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 20
+        },
+        {
+          "task_id": "25",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 38
+        },
+        {
+          "task_id": "26",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 24
+        },
+        {
+          "task_id": "28",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 24
+        },
+        {
+          "task_id": "29",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 24,
+          "failure_insights": [
+            "Action not completed: validate_issue_evidence"
+          ]
+        },
+        {
+          "task_id": "31",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 18,
+          "failure_insights": [
+            "Action not completed: transfer_to_human_agent",
+            "Database state does not match expected outcome"
+          ]
+        },
+        {
+          "task_id": "32",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 24,
+          "failure_insights": [
+            "Action not completed: get_guest_history",
+            "Action not completed: request_host_decision"
+          ]
+        },
+        {
+          "task_id": "33",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 8,
+          "failure_insights": [
+            "Action not completed: get_reservation_details",
+            "Action not completed: get_listing_details",
+            "Action not completed: get_guest_history",
+            "Action not completed: get_host_profile",
+            "Action not completed: request_host_decision"
+          ]
+        },
+        {
+          "task_id": "34",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 18,
+          "failure_insights": [
+            "Action not completed: validate_issue_evidence",
+            "Action not completed: get_reservation_details",
+            "Action not completed: get_listing_details",
+            "Action not completed: request_host_decision",
+            "Action not completed: process_goodwill_refund"
+          ]
+        },
+        {
+          "task_id": "1",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 16
+        },
+        {
+          "task_id": "6",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 22
+        },
+        {
+          "task_id": "10",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 22,
+          "failure_insights": [
+            "Action not completed: cancel_reservation"
+          ]
+        },
+        {
+          "task_id": "13",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 12
+        },
+        {
+          "task_id": "14",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 24
+        },
+        {
+          "task_id": "22",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 20
+        },
+        {
+          "task_id": "23",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 26
+        },
+        {
+          "task_id": "24",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 32
+        },
+        {
+          "task_id": "25",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 22
+        },
+        {
+          "task_id": "26",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 28
+        },
+        {
+          "task_id": "28",
+          "success": true,
+          "reward": 1.0,
+          "termination_reason": "user_stop",
+          "num_turns": 24
+        },
+        {
+          "task_id": "29",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 16,
+          "failure_insights": [
+            "Action not completed: get_issue_details",
+            "Action not completed: get_host_profile",
+            "Action not completed: request_host_decision",
+            "Database state does not match expected outcome"
+          ]
+        },
+        {
+          "task_id": "31",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 18,
+          "failure_insights": [
+            "Action not completed: transfer_to_human_agent",
+            "Database state does not match expected outcome"
+          ]
+        },
+        {
+          "task_id": "32",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 6,
+          "failure_insights": [
+            "Action not completed: get_reservation_details",
+            "Action not completed: get_listing_details",
+            "Action not completed: get_guest_history",
+            "Action not completed: get_host_profile",
+            "Action not completed: request_host_decision"
+          ]
+        },
+        {
+          "task_id": "33",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 16,
+          "failure_insights": [
+            "Action not completed: get_guest_history",
+            "Action not completed: request_host_decision"
+          ]
+        },
+        {
+          "task_id": "34",
+          "success": false,
+          "reward": 0.0,
+          "termination_reason": "user_stop",
+          "num_turns": 24,
+          "failure_insights": [
+            "Action not completed: validate_issue_evidence",
+            "Action not completed: request_host_decision",
+            "Action not completed: process_goodwill_refund"
+          ]
+        }
+      ]
+    }
+  ]
+}
