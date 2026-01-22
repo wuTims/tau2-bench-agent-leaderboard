@@ -19,7 +19,16 @@
           "2": 0.6666666666666666,
           "3": 0.6
         },
-        "avg_difficulty": 0.6
+        "avg_difficulty": 0.4545,
+        "avg_difficulty_original": 0.6,
+        "display": {
+          "tasks_label": "5 tasks x 3 trials",
+          "simulations_label": "11/15 passed",
+          "pass_rate_pct": 73.3,
+          "pass_at_1_pct": 73.3,
+          "pass_at_2_pct": 66.7,
+          "avg_difficulty_pct": 45.5
+        }
       },
       "tasks": [
         {
