@@ -1,0 +1,8 @@
+{
+  "image_digests": {
+    "green-agent": "ghcr.io/wutims/tau2-agent@sha256:d4f0882fa6a8f89e874ba9abf4e54e88c385bb758c374d4fe4b1d25b2eb3b2cc",
+    "vacation-agent": "ghcr.io/wutims/vacation-rentals-agent@sha256:e27be409fdeeaeb72c42d77982bc6f5372cdce02d96271ac84ef5fe0247aefc5",
+    "agentbeats-client": "ghcr.io/agentbeats/agentbeats-client@sha256:13dfe3ef4e583a80e7ce2fe3becd0ce3b879841368a7f4fa40b6ebbabeeb014e"
+  },
+  "timestamp": "2026-01-22T08:16:17Z"
+}
