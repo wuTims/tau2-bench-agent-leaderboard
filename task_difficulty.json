@@ -1,0 +1,44 @@
+{
+  "vacation_rental": {
+    "0": 0.5,
+    "1": 0.5,
+    "2": 0.5,
+    "3": 0.55,
+    "4": 0.55,
+    "5": 0.55,
+    "6": 0.5,
+    "7": 0.6,
+    "8": 0.6,
+    "9": 0.6,
+    "10": 0.65,
+    "11": 0.65,
+    "12": 0.65,
+    "13": 0.4,
+    "14": 0.4,
+    "15": 0.45,
+    "16": 0.4,
+    "17": 0.35,
+    "18": 0.5,
+    "19": 0.45,
+    "20": 0.4,
+    "21": 0.35,
+    "22": 0.8,
+    "23": 0.8
+  },
+  "_meta": {
+    "version": "1.0",
+    "description": "Task difficulty scores for computing weighted avg_difficulty metric",
+    "scoring_guidelines": {
+      "0.2-0.4": "Simple lookup/validation tasks (e.g., get_host_profile, get_issue_details)",
+      "0.4-0.6": "Standard tasks with clear criteria (e.g., process cancellation, calculate refund)",
+      "0.6-0.8": "Multi-step tasks requiring judgment (e.g., handle exception request with documentation)",
+      "0.8-1.0": "Complex nuance scenarios (e.g., balance host preferences with guest needs)"
+    },
+    "vacation_rental_notes": {
+      "0-6": "Basic cancellation policy lookup and refund calculation tasks",
+      "7-12": "Multi-step cancellation scenarios with grace periods and calculations",
+      "13-21": "Tool validation scenarios - simple tool invocation tests",
+      "22-23": "Full nuance scenarios testing host-guest interaction complexity"
+    }
+  }
+}
