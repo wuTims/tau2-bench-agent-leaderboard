@@ -66,6 +66,7 @@ def enrich_summary(
     summary: dict,
     task_results: list[dict],
     task_difficulty_map: dict[str, float],
+    domain_has_difficulty: bool,
 ) -> dict:
     """Add display-friendly fields to summary.
 
@@ -73,6 +74,7 @@ def enrich_summary(
         summary: Original summary dict from results JSON.
         task_results: List of task result dicts.
         task_difficulty_map: Dict mapping task_id to difficulty score.
+        domain_has_difficulty: Whether this domain has task difficulties defined.
 
     Returns:
         Enriched summary dict with display fields and corrected avg_difficulty.
@@ -84,9 +86,6 @@ def enrich_summary(
     avg_reward = summary.get("avg_reward", 0)
     pass_hat_k = summary.get("pass_hat_k", {})
 
-    # Recompute avg_difficulty using task difficulty scores
-    corrected_avg_difficulty = compute_avg_difficulty(task_results, task_difficulty_map)
-
     # Calculate display percentages
     pass_rate_pct = round((successful_simulations / total_simulations * 100), 1) if total_simulations > 0 else 0
     pass_at_1_pct = round(pass_hat_k.get("1", 0) * 100, 1) if pass_hat_k else round(avg_reward * 100, 1)
@@ -95,23 +94,26 @@ def enrich_summary(
     # Create enriched summary
     enriched = dict(summary)
 
-    # Update avg_difficulty with corrected value
-    enriched["avg_difficulty"] = round(corrected_avg_difficulty, 4)
-
-    # Store original buggy avg_difficulty for reference
-    if "avg_difficulty" in summary and summary["avg_difficulty"] != corrected_avg_difficulty:
-        enriched["avg_difficulty_original"] = summary["avg_difficulty"]
-
     # Add display-friendly computed fields
-    enriched["display"] = {
+    display = {
         "tasks_label": f"{total_tasks} tasks x {num_trials} trials",
         "simulations_label": f"{successful_simulations}/{total_simulations} passed",
         "pass_rate_pct": pass_rate_pct,
         "pass_at_1_pct": pass_at_1_pct,
         "pass_at_2_pct": pass_at_2_pct,
-        "avg_difficulty_pct": round(corrected_avg_difficulty * 100, 1),
     }
 
+    # Only recompute avg_difficulty if domain has task difficulties defined
+    if domain_has_difficulty:
+        corrected_avg_difficulty = compute_avg_difficulty(task_results, task_difficulty_map)
+        enriched["avg_difficulty"] = round(corrected_avg_difficulty, 4)
+        display["avg_difficulty_pct"] = round(corrected_avg_difficulty * 100, 1)
+
+        # Store original buggy avg_difficulty for reference
+        if "avg_difficulty" in summary and summary["avg_difficulty"] != corrected_avg_difficulty:
+            enriched["avg_difficulty_original"] = summary["avg_difficulty"]
+
+    enriched["display"] = display
     return enriched
 
 
@@ -162,11 +164,14 @@ def enrich_single_result(entry: dict, difficulty_map: dict[str, dict[str, float]
     domain = summary.get("domain", "")
     task_results = entry.get("task_results", [])
 
-    # Get difficulty map for this domain, default to empty
+    # Check if domain has task difficulties defined
+    domain_has_difficulty = domain in difficulty_map
     domain_difficulty = difficulty_map.get(domain, {})
 
     # Enrich the summary
-    enriched["summary"] = enrich_summary(summary, task_results, domain_difficulty)
+    enriched["summary"] = enrich_summary(
+        summary, task_results, domain_difficulty, domain_has_difficulty
+    )
 
     return enriched
 
